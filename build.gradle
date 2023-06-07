@@ -1,0 +1,72 @@
+buildscript {
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.12'
+    }
+}
+
+plugins {
+    id 'application'
+}
+
+apply plugin: 'java'
+apply plugin: 'com.google.protobuf'
+apply plugin: 'idea'
+
+group = 'lakshyaamez.tutorial.armeria.grpc'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+protobuf {
+    // Configure the protoc executable.
+    protoc {
+        // Download from the repository.
+        artifact = 'com.google.protobuf:protoc:3.21.1'
+    }
+
+    // Locate the codegen plugins.
+    plugins {
+        // Locate a plugin with name 'grpc'.
+        grpc {
+            // Download from the repository.
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.48.0'
+        }
+    }
+    generateProtoTasks {
+        ofSourceSet('main')*.plugins {
+            grpc {}
+        }
+    }
+}
+
+
+
+dependencies {
+    runtimeOnly 'org.slf4j:slf4j-simple:1.7.36'
+
+    implementation 'com.linecorp.armeria:armeria:1.23.1'
+    implementation 'com.linecorp.armeria:armeria-grpc:1.23.1'
+    implementation 'com.google.protobuf:protobuf-java:3.22.0-RC1'
+
+    compileOnly 'javax.annotation:javax.annotation-api:1.3.2'
+}
+
+tasks.withType(JavaCompile) {
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
+    options.encoding = 'UTF-8'
+    options.debug = true
+    options.compilerArgs += '-parameters'
+}
+
+application {
+    mainClass.set('lakshyaamez.tutorial.armeria.grpc.Main')
+}
+
+tasks.named("processResources").configure { dependsOn("extractProto") }
+
+test {
+    useJUnitPlatform()
+}
